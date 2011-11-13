@@ -1,13 +1,19 @@
 require 'libvirt'
+require './configuration_xml.rb'
 
-conn = Libvirt::open_auth("qemu:///system")
-
+conn = Libvirt::open("qemu:///system")
 
 if conn.closed?
-  puts "Connection was not been established."
-  return
+  puts "closed"
 else
-  puts "Connection is established now."
+  puts "opened"
 end
-  
+
+xml = Xml_conf.new
+
+dom = conn.create_domain_xml(xml.config)
+
+sleep 5
+
+dom.destroy
 conn.close
