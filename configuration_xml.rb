@@ -1,7 +1,4 @@
 
-GUEST_DISK = "/home/michal/media/Download/Fedora-16-x86_64-Live-KDE.iso"
-UUID = "6b70605e-0e06-11e1-92a1-001f1616e000"
-
 class Xml_conf
   def config
     return @new_dom_xml
@@ -10,14 +7,14 @@ class Xml_conf
   def initialize
  
 @new_dom_xml = <<EOF
-<domain type="qemu">
-  <name>tralala</name>
-  <uuid>#{UUID}</uuid>
-  <memory>262144</memory>
-  <currentMemory>262144</currentMemory>
-  <vcpu>1</vcpu>
+<domain type="kvm">
+  <name>Testing instance</name>
+  <uuid>5bf1b4be-1920-11e1-92be-001f1616e111</uuid>
+  <memory>256000</memory>
+  <currentMemory>256000</currentMemory>
+  <vcpu>2</vcpu>
   <os>
-    <type machine="pc-0.14" arch="x86_64" class="text">qemu</type>
+    <type machine="pc-0.14" arch="x86_64" class="text">hvm</type>
     <boot dev="hd"/>
   </os>
   <features>
@@ -29,19 +26,16 @@ class Xml_conf
   <on_crash>destroy</on_crash>
   <devices>
     <emulator>/usr/bin/qemu-kvm</emulator>
-    <disk type="file" device="cdrom">
-      <driver type="qcow2" name="qemu"/>
-      <source file="#{GUEST_DISK}"/>
-      <readonly/>
-      <driver name='qemu' type='raw'/>
-      <target dev='hdc' bus='ide'/>
-      </disk>
+    <disk type="file" device="disk">
+      <source file="/home/mluscon/test.img"/>
+      <target dev="vda" bus="virtio"/>
+      
+    </disk>
     <membaloon model="virtio">
       <address type="pci" function="0x0" domain="0x0000" bus="0x00" slot="0x06"/>
     </membaloon>
   </devices>
 </domain>
-
 EOF
 
   end

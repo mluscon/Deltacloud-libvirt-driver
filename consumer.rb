@@ -3,7 +3,7 @@ require 'amqp'
 require 'nokogiri'
 
 EventMachine.run do
-  connection = AMQP.connect(:host => '192.168.2.101')
+  connection = AMQP.connect(:host => 'localhost')
   puts "Connected to AMQP broker. Running #{AMQP::VERSION} version of the gem..."
 
   machines = []
