@@ -1,15 +1,17 @@
 
 require 'fileutils'
 require 'rubygems'
-
+require 'nokogiri'
  
 
 
 class Instance
   
-  
-  def initialize()
+  def initialize( xml )
     @state = 1
+    @spec = xml
+    
+    puts( xml.xpath('/domain/uuid').first.text + " was created")
   end
   
   def copy( from, to )
@@ -21,7 +23,7 @@ class Instance
     
 end
 
-inst = Instance.new
-inst.copy("/home/mluscon/test.img", "/home/mluscon/copy_of_test.img")
+#inst = Instance.new
+#inst.copy("/home/mluscon/test.img", "/home/mluscon/copy_of_test.img")
 
-while true do puts "tralala" end
+#while true do puts "tralala" end
