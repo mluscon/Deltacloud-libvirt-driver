@@ -11,7 +11,7 @@ require './web'
 $machines = Hash.new
 
 
-
+  
 #resque worker
 fork do  
   loop do
