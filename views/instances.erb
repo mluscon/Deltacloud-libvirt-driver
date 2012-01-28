@@ -1,7 +1,10 @@
 
-<% @inst.each do |uuid, xml| %>
-    <ul>
-        <li> uuid = <% uuid %> </li>
-    </ul>
+<h1> Instances </h1>
+
+<% require 'redis' %>
+<%  redis = Redis.new %>
+   
+
+<% redis.smembers('waiting').each do | iter | %>
+pitcho = <%= iter.to_s %>
 <% end %>
- 

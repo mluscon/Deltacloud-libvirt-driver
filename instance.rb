@@ -1,29 +1,43 @@
-
 require 'fileutils'
 require 'rubygems'
 require 'nokogiri'
- 
+require 'resque'
+require 'resque/helpers'
+require 'resque_scheduler'
+require 'redis'
+
+
+
+require './configuration_xml'
 
 
 class Instance
   
-  def initialize( xml )
+  def initialize( spec )
+    @queue = :images
     @state = 1
-    @spec = xml
+    @spec = spec
+    @redis = Redis.new
+    from = "/home/mluscon/projects/deltacloud-libvirt/driver/test.img" 
+    to = "/home/mluscon/projects/deltacloud-libvirt/driver/test_copy.img"
+    @uuid = spec.xpath('/domain/uuid').first.text
     
-    puts( xml.xpath('/domain/uuid').first.text + " was created")
+    Resque.enqueue( self, from, to )
+    redis.sadd "waiting" @uuid
   end
   
-  def copy( from, to )
-     @thread = Thread.new do 
-	FileUtils.cp( from, to)
-     end
- 
+  def self.perform(uuid, from, to)
+    @redis.srem "waiting" @uuid
+    @redis.sadd "copying" @uuid
+    FileUtils.cp( from, to)
+    @redis.srem "copying" @uuid
+    @redis.sadd "running" @uuid
   end
-    
+  
+  attr_accessor :state
+  
 end
 
-#inst = Instance.new
-#inst.copy("/home/mluscon/test.img", "/home/mluscon/copy_of_test.img")
 
-#while true do puts "tralala" end
+
+
