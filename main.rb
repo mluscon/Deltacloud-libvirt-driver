@@ -8,6 +8,7 @@ require 'parseconfig'
 require './instance'
 require './web'
 
+
 #config
 config = ParseConfig.new('./file.conf')
 amqp_server = config.get_value('amqp_server')
@@ -26,7 +27,6 @@ workers.times do
     end
   end
 end
-
 
 #web interface
 fork do
