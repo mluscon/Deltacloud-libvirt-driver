@@ -3,50 +3,61 @@
 require 'rubygems'
 require 'amqp'
 require 'nokogiri'
-
+require 'parseconfig'
 
 require './instance'
 require './web'
 
-$machines = Hash.new
+#config
+config = ParseConfig.new('./file.conf')
+amqp_server = config.get_value('amqp_server')
+workers = Integer( config.get_value('workers') )
 
-
-
-#resque worker
-fork do  
-  loop do
-    if job = Resque.reserve(:images)
-     job.perform
-    else     
-      sleep 5
+    
+#workers
+workers.times do
+  fork do  
+    loop do
+        if job = Resque.reserve(:images)
+        job.perform
+      else     
+        sleep 5
+      end
     end
-   end
+  end
 end
 
-#sinatra interface
-Thread.new do
+
+#web interface
+fork do
   Web.run!
 end
 
 
 #amqp client
-amqp_server = ARGV[0]
-printf "Connecting to amqp server on #{amqp_server}.\n"
+machines = Hash.new
 
 AMQP.start( :host => amqp_server ) do |connection|
-  
-  puts "Connected to AMQP broker. Running #{AMQP::VERSION} version of the gem..."
-  
+    
   channel = AMQP::Channel.new(connection)
   queue = channel.queue("libvirt", :auto_delete => true)
-  
-  queue.subscribe do |metadata, payload|
-    libvirt_spec = Nokogiri::XML(payload)
-    uuid = libvirt_spec.xpath('/domain/uuid').first.text
-    $machines[uuid] = Instance.new( libvirt_spec )
-
+   
+  queue_.subscribe do |metadata, payload|
+    message = Nokogiri::XML(payload)
+    case message.root.name
+    when 'query'
+      uuid = libvirt_spec.xpath('/query/uuid').first.text
+      state = helper.state( uuid )
+      channel.default_exchange.publish(state,
+                                       :routing_key => metadata.reply_to,
+                                       :correlation_id => metadata.message_id,
+                                       :immediate => true,
+                                       :mandatory => true)    
+      
+    when 'launch'
+      uuid = libvirt_spec.xpath('/launch/domain/uuid').first.text
+      $machines[uuid] = Instance.new( libvirt_spec )
+    end
   end
-  
 end
-
 

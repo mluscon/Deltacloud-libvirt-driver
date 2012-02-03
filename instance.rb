@@ -17,21 +17,17 @@ class Instance
     @queue = :images
     @state = 1
     @spec = spec
-    @redis = Redis.new
+     
     from = "/home/mluscon/projects/deltacloud-libvirt/driver/test.img" 
     to = "/home/mluscon/projects/deltacloud-libvirt/driver/test_copy.img"
     @uuid = spec.xpath('/domain/uuid').first.text
     
-    Resque.enqueue( self, from, to )
-    redis.sadd "waiting" @uuid
+    Resque.enqueue( self, @uuid, from, to )
+    
   end
   
-  def self.perform(uuid, from, to)
-    @redis.srem "waiting" @uuid
-    @redis.sadd "copying" @uuid
+  def self.perform( uuid, from, to)
     FileUtils.cp( from, to)
-    @redis.srem "copying" @uuid
-    @redis.sadd "running" @uuid
   end
   
   attr_accessor :state
