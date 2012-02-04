@@ -7,6 +7,7 @@ require 'parseconfig'
 
 require './instance'
 require './web'
+require './helper'
 
 
 #config
@@ -17,13 +18,15 @@ workers = Integer( config.get_value('workers') )
     
 #workers
 workers.times do
-  fork do  
+  fork do
+    redis = Redis.new
+    helper = Helper.new
     loop do
-        if job = Resque.reserve(:images)
-        job.perform
-      else     
-        sleep 5
-      end
+        if uuid = redis.lpop( 'waiting' )
+          helper.copy( uuid )       
+        else     
+          sleep 5
+        end
     end
   end
 end
@@ -35,7 +38,7 @@ end
 
 
 #amqp client
-machines = Hash.new
+helper = Helper.new
 
 AMQP.start( :host => amqp_server ) do |connection|
     
@@ -46,7 +49,7 @@ AMQP.start( :host => amqp_server ) do |connection|
     message = Nokogiri::XML(payload)
     case message.root.name
     when 'query'
-      uuid = libvirt_spec.xpath('/query/uuid').first.text
+      uuid = message.xpath('/query/uuid').first.text
       state = helper.state( uuid )
       channel.default_exchange.publish(state,
                                        :routing_key => metadata.reply_to,
@@ -55,9 +58,10 @@ AMQP.start( :host => amqp_server ) do |connection|
                                        :mandatory => true)    
       
     when 'launch'
-      uuid = libvirt_spec.xpath('/launch/domain/uuid').first.text
-      $machines[uuid] = Instance.new( libvirt_spec )
+      helper.add( message )
     end
   end
 end
+
+                
 
