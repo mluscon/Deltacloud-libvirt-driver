@@ -11,7 +11,7 @@ require './helper'
 
 
 #config
-config = ParseConfig.new('./file.conf')
+config = ParseConfig.new('./driver.conf')
 amqp_server = config.get_value('amqp_server')
 workers = Integer( config.get_value('workers') )
 
