@@ -17,8 +17,9 @@ help = Helper.new
 
 help.add( config )
 
-help.copy( uuid )
+stat = help.status( uuid )
 
+puts stat
 
  
  

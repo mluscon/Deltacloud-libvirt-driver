@@ -2,27 +2,33 @@ require 'rubygems'
 require 'fileutils'
 require 'nokogiri'
 require 'redis'
+require 'libvirt'
 
 class Helper
   
   def initialize
     @redis = Redis.new
-    builder = Nokogiri::XML::Builder.new do
-      response {
-        uuid_ 
-        status_
-    }
-    end
-
+    @conn = Libvirt::open("qemu:///system")
   end
   
   def status( uuid )
-    #need to complete
-    #if redis.sismember('waiting', uuid )  return status 
-     
-    #if redis.sismember('copying', uuid )  return status
-     
-    #if redis.sismember('running', uuid )  return status
+    if @redis.sismember('running', uuid )
+      builder = Nokogiri::XML::Builder.new do
+      response {
+        uuid_ uuid
+        status_ 'running'
+      }
+      end
+      return builder.to_xml
+    else
+      builder = Nokogiri::XML::Builder.new do
+      response {
+        uuid_ uuid
+        status_ 'pending'
+      }
+      end
+      return builder.to_xml
+    end     
   end
   
   def add( message )
@@ -44,7 +50,12 @@ class Helper
     @redis.rpush( "running", uuid)
   end
   
-  
+  def transform( uuid )
+    
+    
+    
+  end
+    
 end
     
 

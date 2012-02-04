@@ -13,7 +13,7 @@ require './helper'
 #config
 config = ParseConfig.new('./file.conf')
 amqp_server = config.get_value('amqp_server')
-workers = Integer( config.get_value('workers') )
+workers = config.get_value('workers').to_i
 
     
 #workers
@@ -23,7 +23,8 @@ workers.times do
     helper = Helper.new
     loop do
         if uuid = redis.lpop( 'waiting' )
-          helper.copy( uuid )       
+          helper.copy( uuid )
+	  helper.transform( uuid )
         else     
           sleep 5
         end
@@ -41,7 +42,6 @@ end
 helper = Helper.new
 
 AMQP.start( :host => amqp_server ) do |connection|
-    
   channel = AMQP::Channel.new(connection)
   queue = channel.queue("libvirt", :auto_delete => true)
    
