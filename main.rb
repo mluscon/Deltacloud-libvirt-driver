@@ -11,9 +11,9 @@ require './helper'
 
 
 #config
-config = ParseConfig.new('./driver.conf')
-amqp_server = config.get_value('amqp_server')
-workers = config.get_value('workers').to_i
+config = ParseConfig.new( './driver.conf' )
+amqp_server = config.get_value( 'amqp_server' )
+workers = config.get_value( 'workers' ).to_i
 
     
 #workers
@@ -23,8 +23,8 @@ workers.times do
     helper = Helper.new
     loop do
         if uuid = redis.lpop( 'waiting' )
-          helper.copy( uuid )
-	  helper.transform( uuid )
+          helper.transform( uuid )
+	  helper.copy_and_launch( uuid )
         else     
           sleep 5
         end
@@ -42,14 +42,14 @@ end
 helper = Helper.new
 
 AMQP.start( :host => amqp_server ) do |connection|
-  channel = AMQP::Channel.new(connection)
+  channel = AMQP::Channel.new( connection )
   queue = channel.queue("libvirt", :auto_delete => true)
    
   queue_.subscribe do |metadata, payload|
-    message = Nokogiri::XML(payload)
+    message = Nokogiri::XML( payload )
     case message.root.name
     when 'query'
-      uuid = message.xpath('/query/uuid').first.text
+      uuid = message.xpath( '/query/uuid' ).first.text
       state = helper.state( uuid )
       channel.default_exchange.publish(state,
                                        :routing_key => metadata.reply_to,

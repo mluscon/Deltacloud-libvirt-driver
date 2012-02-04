@@ -8,7 +8,7 @@ class Helper
   
   def initialize
     @redis = Redis.new
-    @conn = Libvirt::open("qemu:///system")
+    
   end
   
   def status( uuid )
@@ -40,22 +40,31 @@ class Helper
     @redis.rpush( "waiting", uuid ) 
   end
 
-  def copy( uuid )
+  def copy_and_launch( uuid )
+    conn = Libvirt::open("qemu:///system")
     from = @redis.hget( uuid, 'from')
     to = @redis.hget( uuid, 'to' )
+    spec = @redis.hget(uuid, 'spec')
     @redis.rpush( "copying" , uuid.to_str ) 
     
     FileUtils.cp( from, to)
     @redis.lrem( "copying", 1, uuid )
     @redis.rpush( "running", uuid)
+    dom = conn.create_domain_xml( spec )
   end
   
   def transform( uuid )
+    to = @redis.hget(uuid, 'to')
+    spec = Nokogiri::XML( @redis.hget(uuid, 'spec') )
     
+    spec.search('//source').each do |node|
+      node.set_attribute(file, to)
+    end
     
-    
+    @redis.hset('spec', spec)    
   end
-    
+  
+  
 end
     
 

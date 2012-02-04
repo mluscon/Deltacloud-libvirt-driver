@@ -19,7 +19,9 @@ help.add( config )
 
 stat = help.status( uuid )
 
-puts stat
+help.transform( uuid )
+
+puts redis.hget( uuid, 'spec' )
 
  
  
