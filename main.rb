@@ -33,7 +33,7 @@ workers.times do
 end
 
 #web interface
-fork do
+Thread.new do
   Web.run!
 end
 
@@ -45,8 +45,9 @@ AMQP.start( :host => amqp_server ) do |connection|
   channel = AMQP::Channel.new( connection )
   queue = channel.queue("libvirt", :auto_delete => true)
    
-  queue_.subscribe do |metadata, payload|
+  queue.subscribe do |metadata, payload|
     message = Nokogiri::XML( payload )
+    puts payload
     case message.root.name
     when 'query'
       uuid = message.xpath( '/query/uuid' ).first.text
