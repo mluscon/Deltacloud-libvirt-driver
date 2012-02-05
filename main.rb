@@ -5,7 +5,6 @@ require 'amqp'
 require 'nokogiri'
 require 'parseconfig'
 
-require './instance'
 require './web'
 require './helper'
 
@@ -33,7 +32,7 @@ workers.times do
 end
 
 #web interface
-fork do
+Thread.new do
   Web.run!
 end
 
@@ -45,7 +44,7 @@ AMQP.start( :host => amqp_server ) do |connection|
   channel = AMQP::Channel.new( connection )
   queue = channel.queue("libvirt", :auto_delete => true)
    
-  queue_.subscribe do |metadata, payload|
+  queue.subscribe do |metadata, payload|
     message = Nokogiri::XML( payload )
     case message.root.name
     when 'query'
