@@ -5,7 +5,6 @@ require 'amqp'
 require 'nokogiri'
 require 'parseconfig'
 
-require './instance'
 require './web'
 require './helper'
 
