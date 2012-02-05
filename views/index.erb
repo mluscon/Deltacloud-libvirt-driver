@@ -1,0 +1,35 @@
+
+<h1> Instances </h1>
+
+<% require 'redis' %>
+<%  redis = Redis.new %>
+
+<h2>Waiting</h2>
+
+<table>
+
+<% redis.smembers('waiting').each do | iter | %>
+<tr> <td> <%= iter.to_s %> </td> </tr>
+<% end %>
+
+</table>
+
+<h2>Copying</h2>
+
+<table>
+
+<% redis.smembers('copying').each do | iter | %>
+<tr> <td> <%= iter.to_s %> </td> </tr>
+<% end %>
+
+</table>
+
+<h2>Running</h2>
+
+<table>
+
+<% redis.smembers('running').each do | iter | %>
+<tr> <td> <%= iter.to_s %> </td> </tr>
+<% end %>
+
+</table>
