@@ -1,0 +1,24 @@
+
+.instances {
+  float: left;
+  border-radius: 15px;
+  box-shadow: 10px 5px 20px #666;
+  margin: 50px;
+  border: 5px solid #666;
+  padding: 20px;
+  width: 20%;
+}
+
+h1 {
+  text-align: center;
+}
+
+.content {
+  width: 90%;
+
+}
+
+.instances h2 {
+  text-align: center;
+}
+
