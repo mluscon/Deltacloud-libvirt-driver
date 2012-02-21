@@ -23,7 +23,7 @@ workers.times do
     loop do
         if uuid = redis.lpop( 'waiting' )
           helper.transform( uuid )
-	  helper.copy_and_launch( uuid )
+          helper.copy_and_launch( uuid )
         else     
           sleep 5
         end
@@ -38,7 +38,7 @@ end
 
 
 #amqp client
-helper = Helper.new
+$helper = Helper.new
 
 AMQP.start( :host => amqp_server ) do |connection|
   channel = AMQP::Channel.new( connection )
@@ -46,7 +46,7 @@ AMQP.start( :host => amqp_server ) do |connection|
    
   queue.subscribe do |metadata, payload|
     message = Nokogiri::XML( payload )
-    puts payload
+        
     case message.root.name
     when 'query'
       uuid = message.xpath( '/query/uuid' ).first.text

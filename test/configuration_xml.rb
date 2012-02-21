@@ -7,9 +7,6 @@ class Xml_conf
   def initialize
  
 @new_dom_xml = <<EOF
-<query>
-<copy_from>./test.img</copy_from>
-<copy_to>./test_copy.img</copy_to>
 <domain type="kvm">
   <name>Testing instance</name>
   <uuid>5bf1b4be-1920-11e1-92be-001f1616e111</uuid>
@@ -39,7 +36,6 @@ class Xml_conf
     </membaloon>
   </devices>
 </domain>
-</query>
 EOF
 
   end
