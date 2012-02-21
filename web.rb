@@ -3,6 +3,7 @@ require 'haml'
 require 'redis'
 require 'nokogiri'
 require 'sinatra/static_assets'
+<<<<<<< HEAD
 require 'rack'
 
 
@@ -14,6 +15,15 @@ class Web < Sinatra::Base
     @waiting = Hash.new
     redis.smembers('waiting').each do | uuid |
       spec = Nokogiri::XML( redis.hget(uuid, 'spec') )
+
+
+class Web < Sinatra::Base
+  
+  get '/' do
+    redis = Redis.new
+    @waiting = Hash.new
+    redis.smembers('waiting').each do | uuid |
+      spec = Nokogiri::XML( $redis.hget(uuid, 'spec') )
       name = spec.xpath( '/domain/name' ).first.text
       @waiting[ uuid ] = name
     end
@@ -34,7 +44,7 @@ class Web < Sinatra::Base
     end
     
     haml :index
-
+    
   end
   
   get '/instances/:uuid' do
