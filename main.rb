@@ -8,6 +8,14 @@ require 'parseconfig'
 require './web'
 require './helper'
 
+#recover from outage
+redis = Redis.new
+if (len=redis.llen('copying')) != 0
+  len.times do
+    redis.rpoplpush('copying', 'waiting')
+  end
+end
+
 
 #config
 config = ParseConfig.new( './driver.conf' )
