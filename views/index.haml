@@ -1,0 +1,33 @@
+
+.left
+
+.content
+  .title
+    %h1 Deltacloud Libvirt driver
+
+
+  .instances
+    .waiting
+      %h2 Waiting
+      %ul
+        - @waiting.each do |uuid, name|
+          %li
+            %a{ :href=> "/instances/#{uuid}"}= name
+
+  .instances
+    .copying
+      %h2 Copying
+      %ul
+        - @copying.each do |uuid, name|
+          %li
+            %a{ :href=> "/instances/#{uuid}"}= name
+
+  .instances
+    .running
+      %h2 Running
+      %ul
+        - @running.each do |uuid, name|
+          %li
+            %a{ :href=> "/instances/#{uuid}"}= name
+
+.right

@@ -8,24 +8,30 @@ require 'parseconfig'
 require './web'
 require './helper'
 
+#recover from outage
+redis = Redis.new
+if (len=redis.llen('copying')) != 0
+  len.times do
+    redis.rpoplpush('copying', 'waiting')
+  end
+end
+
 
 #config
 config = ParseConfig.new( './driver.conf' )
 amqp_server = config.get_value( 'amqp_server' )
 workers = config.get_value( 'workers' ).to_i
-
+interval = config.get_value( 'interval' ).to_i
     
 #workers
 workers.times do
   fork do
-    redis = Redis.new
-    helper = Helper.new
     loop do
-        if uuid = redis.lpop( 'waiting' )
-          helper.transform( uuid )
-	  helper.copy_and_launch( uuid )
+        if uuid = Helper.rpop( 'waiting' )
+          Helper.transform( uuid )
+          Helper.copy_and_launch( uuid )
         else     
-          sleep 5
+          sleep interval
         end
     end
   end
@@ -38,19 +44,17 @@ end
 
 
 #amqp client
-helper = Helper.new
-
 AMQP.start( :host => amqp_server ) do |connection|
   channel = AMQP::Channel.new( connection )
   queue = channel.queue("libvirt", :auto_delete => true)
    
   queue.subscribe do |metadata, payload|
     message = Nokogiri::XML( payload )
-    puts payload
+        
     case message.root.name
     when 'query'
       uuid = message.xpath( '/query/uuid' ).first.text
-      state = helper.state( uuid )
+      state = Helper.state( uuid )
       channel.default_exchange.publish(state,
                                        :routing_key => metadata.reply_to,
                                        :correlation_id => metadata.message_id,
@@ -58,7 +62,7 @@ AMQP.start( :host => amqp_server ) do |connection|
                                        :mandatory => true)    
       
     when 'launch'
-      helper.add( message )
+      Helper.add( message )
     end
   end
 end
