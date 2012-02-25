@@ -1,12 +1,7 @@
 
-class Xml_conf
-  def config
-    return @new_dom_xml
-  end
-  
-  def initialize
+module Spec
  
-@new_dom_xml = <<EOF
+XML = <<EOF
 <domain type="kvm">
   <name>Testing instance</name>
   <uuid>5bf1b4be-1920-11e1-92be-001f1616e111</uuid>
@@ -38,5 +33,4 @@ class Xml_conf
 </domain>
 EOF
 
-  end
 end

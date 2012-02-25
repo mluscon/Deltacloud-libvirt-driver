@@ -1,11 +1,11 @@
 require 'rubygems'
 require './web.rb'
-require './test/configuration_xml.rb'
+require './test/spec.rb'
 require 'redis'
 
 
 
-spec = Xml_conf.new.config
+spec = Spec.XML
 $redis = Redis.new
 $redis.flushall
 
